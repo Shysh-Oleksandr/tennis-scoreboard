@@ -32,7 +32,8 @@ aside {
 }
 
 html,
-body {
+body,
+#root {
   height: 100%;
   width: 100%;
   font-size: 100%;

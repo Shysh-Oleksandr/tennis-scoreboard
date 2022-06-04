@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { set } from "immer/dist/internal";
 import { v4 as uuidv4 } from "uuid";
 
 export enum PointTypes {
@@ -36,25 +37,36 @@ export interface scoreboardState {
   id: string;
 }
 
+export function checkIfFirstPlayer(players: IPlayer[], id: string) {
+  return players[0].id === id;
+}
+
+function generateEmptySets(setsNumber: number): ISet[] {
+  const sets: ISet[] = new Array(setsNumber)
+    .fill({
+      firstPlayerGames: 0,
+      secondPlayerGames: 0,
+    })
+    .map((set, index) => {
+      return { ...set, isCurrentSet: index === 0, id: uuidv4() };
+    });
+  console.log(sets);
+
+  return sets;
+}
+
 const initialState: scoreboardState = {
   players: [
     { name: "John", isServing: true, id: uuidv4() },
     { name: "Frank", isServing: false, id: uuidv4() },
   ],
-  pointType: PointTypes.DEFAULT_POINT,
   currentGame: {
     firstPlayerPoints: 0,
     secondPlayerPoints: 0,
     isTiebreak: false,
   },
-  sets: [
-    {
-      firstPlayerGames: 0,
-      secondPlayerGames: 0,
-      isCurrentSet: true,
-      id: uuidv4(),
-    },
-  ],
+  sets: generateEmptySets(3),
+  pointType: PointTypes.DEFAULT_POINT,
   id: uuidv4(),
 };
 

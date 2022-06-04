@@ -1,11 +1,10 @@
 import React from "react";
+import Scoreboard from "./components/Scoreboard";
 
 function App() {
   return (
-    <div className="App">
-      <h2 className="text-center text-2xl bg-teal-800 py-8 text-white">
-        TODO BIEN!
-      </h2>
+    <div className="app text-center bg-green-100 w-full h-full">
+      <Scoreboard />
     </div>
   );
 }
