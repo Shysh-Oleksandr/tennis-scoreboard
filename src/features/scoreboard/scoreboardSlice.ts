@@ -7,7 +7,6 @@ export enum PointTypes {
   BREAK_POINT = "BREAK POINT",
   SET_POINT = "SET POINT",
   MATCH_POINT = "MATCH POINT",
-  DEUCE = "DEUCE",
   TIEBREAK = "TIEBREAK",
 }
 
@@ -24,7 +23,6 @@ export interface IPlayer {
 export interface IGame {
   firstPlayerPoints: number;
   secondPlayerPoints: number;
-  pointType: PointTypes;
 }
 
 export interface ISet {
@@ -41,6 +39,9 @@ export interface scoreboardState {
   currentGame: IGame;
   sets: ISet[];
   isTiebreak: boolean;
+  isDeuce: boolean;
+  pointType: PointTypes;
+  breakpointNumber: number;
   currentSet: number;
   id: string;
 }
@@ -53,10 +54,12 @@ const initialState: scoreboardState = {
   currentGame: {
     firstPlayerPoints: 0,
     secondPlayerPoints: 0,
-    pointType: PointTypes.DEFAULT_POINT,
   },
   currentSet: 0,
   isTiebreak: false,
+  isDeuce: false,
+  breakpointNumber: 0,
+  pointType: PointTypes.DEFAULT_POINT,
 
   currentServer: PlayerTypes.FIRST_PLAYER,
   sets: generateEmptySets(3),
@@ -121,7 +124,7 @@ export const scoreboardSlice = createSlice({
       } else {
         // Check if deuce.
         if (winnerPoints === 2 && loserPoints === 3) {
-          state.currentGame.pointType = PointTypes.DEUCE;
+          state.isDeuce = true;
         }
 
         // Check if win game.
@@ -162,10 +165,30 @@ export const scoreboardSlice = createSlice({
             ? (state.currentGame.firstPlayerPoints += 1)
             : (state.currentGame.secondPlayerPoints += 1);
         }
+
+        // Check if breakpoint.
+        const serverPoints: number =
+          state.currentServer === PlayerTypes.FIRST_PLAYER
+            ? state.currentGame.firstPlayerPoints
+            : state.currentGame.secondPlayerPoints;
+        const receiverPoints: number =
+          state.currentServer !== PlayerTypes.FIRST_PLAYER
+            ? state.currentGame.firstPlayerPoints
+            : state.currentGame.secondPlayerPoints;
+        if (receiverPoints >= 3 && receiverPoints - serverPoints >= 1) {
+          state.pointType = PointTypes.BREAK_POINT;
+          state.breakpointNumber = receiverPoints - serverPoints;
+        } else {
+          state.pointType = PointTypes.DEFAULT_POINT;
+        }
       }
     },
     resetCurrentGame: (state) => {
       state.currentGame = initialState.currentGame;
+      state.isDeuce = false;
+      state.isTiebreak = false;
+      state.pointType = PointTypes.DEFAULT_POINT;
+      state.breakpointNumber = 0;
     },
     changeCurrentServer: (state) => {
       // Change a current server.
