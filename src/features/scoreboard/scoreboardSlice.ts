@@ -1,16 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
+import { generateEmptySets } from "../../utils/functions";
 
 export enum PointTypes {
   DEFAULT_POINT = "DEFAULT POINT",
   BREAK_POINT = "BREAK POINT",
   SET_POINT = "SET POINT",
   MATCH_POINT = "MATCH POINT",
+  DEUCE = "DEUCE",
+}
+
+export enum PlayerTypes {
+  FIRST_PLAYER = "First player",
+  SECOND_PLAYER = "Second player",
 }
 
 export interface IPlayer {
   name: string;
-  isServing: boolean;
   id: string;
 }
 
@@ -18,7 +24,7 @@ export interface IGame {
   firstPlayerPoints: number;
   secondPlayerPoints: number;
   isTiebreak: boolean;
-  isDeuce: boolean;
+  pointType: PointTypes;
 }
 
 export interface ISet {
@@ -30,43 +36,25 @@ export interface ISet {
 
 export interface scoreboardState {
   players: IPlayer[];
-  // currentServer: IPlayer;
-  pointType: PointTypes;
+  currentServer: PlayerTypes;
   currentGame: IGame;
   sets: ISet[];
   id: string;
 }
 
-export function checkIfFirstPlayer(players: IPlayer[], id: string) {
-  return players[0].id === id;
-}
-
-function generateEmptySets(setsNumber: number): ISet[] {
-  const sets: ISet[] = new Array(setsNumber)
-    .fill({
-      firstPlayerGames: 0,
-      secondPlayerGames: 0,
-    })
-    .map((set, index) => {
-      return { ...set, isCurrentSet: index === 0, id: uuidv4() };
-    });
-
-  return sets;
-}
-
 const initialState: scoreboardState = {
   players: [
-    { name: "John", isServing: true, id: uuidv4() },
-    { name: "Frank", isServing: false, id: uuidv4() },
+    { name: "John", id: uuidv4() },
+    { name: "Frank", id: uuidv4() },
   ],
   currentGame: {
     firstPlayerPoints: 0,
     secondPlayerPoints: 0,
     isTiebreak: false,
-    isDeuce: false,
+    pointType: PointTypes.DEFAULT_POINT,
   },
+  currentServer: PlayerTypes.FIRST_PLAYER,
   sets: generateEmptySets(3),
-  pointType: PointTypes.DEFAULT_POINT,
   id: uuidv4(),
 };
 
@@ -89,8 +77,8 @@ export const scoreboardSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    addPoint: (state, { payload }: PayloadAction<boolean>) => {
-      const isFirstPlayer = payload;
+    addPoint: (state, { payload }: PayloadAction<PlayerTypes>) => {
+      const isFirstPlayer = payload === PlayerTypes.FIRST_PLAYER;
       const winnerPoints: number = isFirstPlayer
         ? state.currentGame.firstPlayerPoints
         : state.currentGame.secondPlayerPoints;
@@ -98,13 +86,24 @@ export const scoreboardSlice = createSlice({
         ? state.currentGame.firstPlayerPoints
         : state.currentGame.secondPlayerPoints;
 
+      // Check if deuce.
+      if (winnerPoints === 2 && loserPoints === 3) {
+        state.currentGame.pointType = PointTypes.DEUCE;
+      }
+
+      // Check if win game.
       if ((winnerPoints === 3 && loserPoints < 3) || winnerPoints === 4) {
         scoreboardSlice.caseReducers.resetCurrentGame(state);
-      } else if (winnerPoints === 3 && loserPoints === 4) {
+        scoreboardSlice.caseReducers.changeCurrentServer(state);
+      }
+      // Handle deuce.
+      else if (winnerPoints === 3 && loserPoints === 4) {
         !isFirstPlayer
           ? (state.currentGame.firstPlayerPoints -= 1)
           : (state.currentGame.secondPlayerPoints -= 1);
-      } else {
+      }
+      // Add point to winner.
+      else {
         isFirstPlayer
           ? (state.currentGame.firstPlayerPoints += 1)
           : (state.currentGame.secondPlayerPoints += 1);
@@ -112,6 +111,13 @@ export const scoreboardSlice = createSlice({
     },
     resetCurrentGame: (state) => {
       state.currentGame = initialState.currentGame;
+    },
+    changeCurrentServer: (state) => {
+      // Change a current server.
+      state.currentServer =
+        state.currentServer === PlayerTypes.FIRST_PLAYER
+          ? PlayerTypes.SECOND_PLAYER
+          : PlayerTypes.FIRST_PLAYER;
     },
   },
 });

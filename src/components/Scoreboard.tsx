@@ -1,18 +1,30 @@
 import React from "react";
 import { useAppSelector } from "../app/hooks";
-import { checkIfFirstPlayer } from "../features/scoreboard/scoreboardSlice";
+import {
+  PlayerTypes,
+  PointTypes,
+} from "../features/scoreboard/scoreboardSlice";
+import { checkIfFirstPlayer } from "../utils/functions";
 import Player from "./Player";
 
 const Scoreboard = () => {
-  const { players } = useAppSelector((store) => store.scoreboard);
+  const { players, currentGame } = useAppSelector((store) => store.scoreboard);
   return (
     <div className="max-w-4xl mx-auto pt-32">
-      {players.map((player) => {
-        const isFirstPlayer = checkIfFirstPlayer(players, player.id);
-        return (
-          <Player {...player} isFirstPlayer={isFirstPlayer} key={player.id} />
-        );
-      })}
+      <div className="relative">
+        {currentGame.pointType !== PointTypes.DEFAULT_POINT && (
+          <span className="point-type absolute -top-11 left-0 text-lg px-8 py-2 bg-slate-800 text-white rounded-md">
+            {currentGame.pointType}
+          </span>
+        )}
+        {players.map((player) => {
+          const playerType: PlayerTypes = checkIfFirstPlayer(
+            players,
+            player.id
+          );
+          return <Player {...player} playerType={playerType} key={player.id} />;
+        })}
+      </div>
     </div>
   );
 };

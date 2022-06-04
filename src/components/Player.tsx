@@ -1,29 +1,37 @@
 import React from "react";
 import { useAppSelector } from "../app/hooks";
-import { addPoint, IPlayer } from "../features/scoreboard/scoreboardSlice";
+import {
+  addPoint,
+  IPlayer,
+  PlayerTypes,
+} from "../features/scoreboard/scoreboardSlice";
 import { useAppDispatch } from "./../app/hooks";
 import { convertToGamePoints } from "./../utils/functions";
 
 interface PlayerProps extends IPlayer {
-  isFirstPlayer: boolean;
+  playerType: PlayerTypes;
 }
 
-const Player = ({ name, isServing, id, isFirstPlayer }: PlayerProps) => {
-  const { sets, currentGame } = useAppSelector((store) => store.scoreboard);
+const Player = ({ name, id, playerType }: PlayerProps) => {
+  const { sets, currentGame, currentServer } = useAppSelector(
+    (store) => store.scoreboard
+  );
   const dispatch = useAppDispatch();
+
+  const isFirstPlayer = playerType === PlayerTypes.FIRST_PLAYER;
 
   const playerGamePoints = isFirstPlayer
     ? currentGame.firstPlayerPoints
     : currentGame.secondPlayerPoints;
 
   return (
-    <div className="bg-slate-700 rounded-md text-white border-l-8 border-solid border-teal-500 flex items-center justify-between">
+    <div className="bg-slate-700 relative rounded-md text-white border-l-8 border-solid border-teal-500 flex items-center justify-between">
       <h3 className="font-bold text-2xl text-left p-3">{name}</h3>
       <div
         className="sets relative cursor-pointer"
-        onClick={() => dispatch(addPoint(isFirstPlayer))}
+        onClick={() => dispatch(addPoint(playerType))}
       >
-        {isServing && (
+        {currentServer === playerType && (
           <span className="absolute -left-8 top-1/2 -translate-y-1/2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
