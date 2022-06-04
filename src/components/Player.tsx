@@ -13,9 +13,8 @@ interface PlayerProps extends IPlayer {
 }
 
 const Player = ({ name, id, playerType }: PlayerProps) => {
-  const { sets, currentGame, currentServer } = useAppSelector(
-    (store) => store.scoreboard
-  );
+  const { sets, currentGame, currentServer, currentSet, isTiebreak } =
+    useAppSelector((store) => store.scoreboard);
   const dispatch = useAppDispatch();
 
   const isFirstPlayer = playerType === PlayerTypes.FIRST_PLAYER;
@@ -50,18 +49,27 @@ const Player = ({ name, id, playerType }: PlayerProps) => {
           </span>
         )}
         <div className="flex items-center">
-          {sets.map((set) => {
+          {sets.map((set, index) => {
             return (
               <div
                 key={set.id}
-                className="text-xl bg-slate-600  px-4 py-3 rounded-md"
+                className={`text-xl bg-slate-600 px-4 py-3 rounded-md ${
+                  currentSet === index ? "bg-slate-500" : ""
+                }`}
               >
                 {isFirstPlayer ? set.firstPlayerGames : set.secondPlayerGames}
+                <sup>
+                  {isFirstPlayer
+                    ? set.firstPlayerTiebreakPoints
+                    : set.secondPlayerTiebreakPoints}
+                </sup>
               </div>
             );
           })}
           <div className="text-xl bg-teal-400  w-16 px-2 py-3 rounded-md">
-            {convertToGamePoints(playerGamePoints)}
+            {isTiebreak
+              ? playerGamePoints
+              : convertToGamePoints(playerGamePoints)}
           </div>
         </div>
       </div>

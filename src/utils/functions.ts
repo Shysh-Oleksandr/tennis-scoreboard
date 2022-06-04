@@ -28,7 +28,7 @@ export function generateEmptySets(setsNumber: number): ISet[] {
       secondPlayerGames: 0,
     })
     .map((set, index) => {
-      return { ...set, isCurrentSet: index === 0, id: uuidv4() };
+      return { ...set, id: uuidv4() };
     });
 
   return sets;

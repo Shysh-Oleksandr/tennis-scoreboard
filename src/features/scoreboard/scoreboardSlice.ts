@@ -8,6 +8,7 @@ export enum PointTypes {
   SET_POINT = "SET POINT",
   MATCH_POINT = "MATCH POINT",
   DEUCE = "DEUCE",
+  TIEBREAK = "TIEBREAK",
 }
 
 export enum PlayerTypes {
@@ -23,14 +24,14 @@ export interface IPlayer {
 export interface IGame {
   firstPlayerPoints: number;
   secondPlayerPoints: number;
-  isTiebreak: boolean;
   pointType: PointTypes;
 }
 
 export interface ISet {
   firstPlayerGames: number;
   secondPlayerGames: number;
-  isCurrentSet: boolean;
+  firstPlayerTiebreakPoints?: number;
+  secondPlayerTiebreakPoints?: number;
   id: string;
 }
 
@@ -39,6 +40,8 @@ export interface scoreboardState {
   currentServer: PlayerTypes;
   currentGame: IGame;
   sets: ISet[];
+  isTiebreak: boolean;
+  currentSet: number;
   id: string;
 }
 
@@ -50,9 +53,11 @@ const initialState: scoreboardState = {
   currentGame: {
     firstPlayerPoints: 0,
     secondPlayerPoints: 0,
-    isTiebreak: false,
     pointType: PointTypes.DEFAULT_POINT,
   },
+  currentSet: 0,
+  isTiebreak: false,
+
   currentServer: PlayerTypes.FIRST_PLAYER,
   sets: generateEmptySets(3),
   id: uuidv4(),
@@ -86,27 +91,77 @@ export const scoreboardSlice = createSlice({
         ? state.currentGame.firstPlayerPoints
         : state.currentGame.secondPlayerPoints;
 
-      // Check if deuce.
-      if (winnerPoints === 2 && loserPoints === 3) {
-        state.currentGame.pointType = PointTypes.DEUCE;
-      }
-
-      // Check if win game.
-      if ((winnerPoints === 3 && loserPoints < 3) || winnerPoints === 4) {
-        scoreboardSlice.caseReducers.resetCurrentGame(state);
-        scoreboardSlice.caseReducers.changeCurrentServer(state);
-      }
-      // Handle deuce.
-      else if (winnerPoints === 3 && loserPoints === 4) {
-        !isFirstPlayer
-          ? (state.currentGame.firstPlayerPoints -= 1)
-          : (state.currentGame.secondPlayerPoints -= 1);
-      }
-      // Add point to winner.
-      else {
+      // If there's a tiebreak.
+      if (state.isTiebreak) {
+        // Change current server.
+        if ((winnerPoints + loserPoints) % 2 === 0) {
+          scoreboardSlice.caseReducers.changeCurrentServer(state);
+        }
+        // Add point to winner.
         isFirstPlayer
           ? (state.currentGame.firstPlayerPoints += 1)
           : (state.currentGame.secondPlayerPoints += 1);
+        // Check if win tiebreak(set).
+        if (winnerPoints >= 6 && winnerPoints - loserPoints >= 1) {
+          isFirstPlayer
+            ? (state.sets[state.currentSet].firstPlayerGames += 1)
+            : (state.sets[state.currentSet].secondPlayerGames += 1);
+
+          // Saving tiebreak points.
+          state.sets[state.currentSet].firstPlayerTiebreakPoints =
+            state.currentGame.firstPlayerPoints;
+          state.sets[state.currentSet].secondPlayerTiebreakPoints =
+            state.currentGame.secondPlayerPoints;
+          // Moving to next set.
+          state.currentSet += 1;
+          // Reseting game.
+          state.isTiebreak = false;
+          scoreboardSlice.caseReducers.resetCurrentGame(state);
+        }
+      } else {
+        // Check if deuce.
+        if (winnerPoints === 2 && loserPoints === 3) {
+          state.currentGame.pointType = PointTypes.DEUCE;
+        }
+
+        // Check if win game.
+        if ((winnerPoints === 3 && loserPoints < 3) || winnerPoints === 4) {
+          scoreboardSlice.caseReducers.resetCurrentGame(state);
+          !state.isTiebreak &&
+            scoreboardSlice.caseReducers.changeCurrentServer(state);
+
+          const winnerGames = isFirstPlayer
+            ? (state.sets[state.currentSet].firstPlayerGames += 1)
+            : (state.sets[state.currentSet].secondPlayerGames += 1);
+
+          const loserGames = !isFirstPlayer
+            ? state.sets[state.currentSet].firstPlayerGames
+            : state.sets[state.currentSet].secondPlayerGames;
+
+          // Check if win set.
+          if (winnerGames >= 6 && winnerGames - loserGames >= 2) {
+            state.currentSet += 1;
+          }
+          // Check if tiebreak
+          else if (winnerGames === 6 && loserGames === 6) {
+            state.isTiebreak = true;
+            state.currentServer = PlayerTypes.FIRST_PLAYER;
+
+            // state.currentGame.pointType = PointTypes.TIEBREAK;
+          }
+        }
+        // Handle deuce.
+        else if (winnerPoints === 3 && loserPoints === 4) {
+          !isFirstPlayer
+            ? (state.currentGame.firstPlayerPoints -= 1)
+            : (state.currentGame.secondPlayerPoints -= 1);
+        }
+        // Add point to winner.
+        else {
+          isFirstPlayer
+            ? (state.currentGame.firstPlayerPoints += 1)
+            : (state.currentGame.secondPlayerPoints += 1);
+        }
       }
     },
     resetCurrentGame: (state) => {
