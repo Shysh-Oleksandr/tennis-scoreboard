@@ -1,5 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { set } from "immer/dist/internal";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 
 export enum PointTypes {
@@ -19,6 +18,7 @@ export interface IGame {
   firstPlayerPoints: number;
   secondPlayerPoints: number;
   isTiebreak: boolean;
+  isDeuce: boolean;
 }
 
 export interface ISet {
@@ -50,7 +50,6 @@ function generateEmptySets(setsNumber: number): ISet[] {
     .map((set, index) => {
       return { ...set, isCurrentSet: index === 0, id: uuidv4() };
     });
-  console.log(sets);
 
   return sets;
 }
@@ -64,6 +63,7 @@ const initialState: scoreboardState = {
     firstPlayerPoints: 0,
     secondPlayerPoints: 0,
     isTiebreak: false,
+    isDeuce: false,
   },
   sets: generateEmptySets(3),
   pointType: PointTypes.DEFAULT_POINT,
@@ -89,13 +89,33 @@ export const scoreboardSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    // Use the PayloadAction type to declare the contents of `action.payload`
-    // incrementByAmount: (state, action: PayloadAction<number>) => {
-    //   state.value += action.payload;
-    // },
+    addPoint: (state, { payload }: PayloadAction<boolean>) => {
+      const isFirstPlayer = payload;
+      const winnerPoints: number = isFirstPlayer
+        ? state.currentGame.firstPlayerPoints
+        : state.currentGame.secondPlayerPoints;
+      const loserPoints: number = !isFirstPlayer
+        ? state.currentGame.firstPlayerPoints
+        : state.currentGame.secondPlayerPoints;
+
+      if ((winnerPoints === 3 && loserPoints < 3) || winnerPoints === 4) {
+        scoreboardSlice.caseReducers.resetCurrentGame(state);
+      } else if (winnerPoints === 3 && loserPoints === 4) {
+        !isFirstPlayer
+          ? (state.currentGame.firstPlayerPoints -= 1)
+          : (state.currentGame.secondPlayerPoints -= 1);
+      } else {
+        isFirstPlayer
+          ? (state.currentGame.firstPlayerPoints += 1)
+          : (state.currentGame.secondPlayerPoints += 1);
+      }
+    },
+    resetCurrentGame: (state) => {
+      state.currentGame = initialState.currentGame;
+    },
   },
 });
 
-export const {} = scoreboardSlice.actions;
+export const { addPoint } = scoreboardSlice.actions;
 
 export default scoreboardSlice.reducer;

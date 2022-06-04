@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppSelector } from "../app/hooks";
-import { IPlayer } from "../features/scoreboard/scoreboardSlice";
+import { addPoint, IPlayer } from "../features/scoreboard/scoreboardSlice";
+import { useAppDispatch } from "./../app/hooks";
+import { convertToGamePoints } from "./../utils/functions";
 
 interface PlayerProps extends IPlayer {
   isFirstPlayer: boolean;
@@ -8,10 +10,19 @@ interface PlayerProps extends IPlayer {
 
 const Player = ({ name, isServing, id, isFirstPlayer }: PlayerProps) => {
   const { sets, currentGame } = useAppSelector((store) => store.scoreboard);
+  const dispatch = useAppDispatch();
+
+  const playerGamePoints = isFirstPlayer
+    ? currentGame.firstPlayerPoints
+    : currentGame.secondPlayerPoints;
+
   return (
     <div className="bg-slate-700 rounded-md text-white border-l-8 border-solid border-teal-500 flex items-center justify-between">
       <h3 className="font-bold text-2xl text-left p-3">{name}</h3>
-      <div className="sets relative">
+      <div
+        className="sets relative cursor-pointer"
+        onClick={() => dispatch(addPoint(isFirstPlayer))}
+      >
         {isServing && (
           <span className="absolute -left-8 top-1/2 -translate-y-1/2">
             <svg
@@ -41,10 +52,8 @@ const Player = ({ name, isServing, id, isFirstPlayer }: PlayerProps) => {
               </div>
             );
           })}
-          <div className="text-xl bg-teal-400  px-4 py-3 rounded-md">
-            {isFirstPlayer
-              ? currentGame.firstPlayerPoints
-              : currentGame.secondPlayerPoints}
+          <div className="text-xl bg-teal-400  w-16 px-2 py-3 rounded-md">
+            {convertToGamePoints(playerGamePoints)}
           </div>
         </div>
       </div>
