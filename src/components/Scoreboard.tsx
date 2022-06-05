@@ -16,7 +16,7 @@ const Scoreboard = () => {
 
     if (isTiebreak) pointTypeString = "TIE BREAK";
     if (isDeuce) pointTypeString = "DEUCE";
-    if (pointType === PointTypes.BREAK_POINT) {
+    if (pointType !== PointTypes.DEFAULT_POINT) {
       pointTypeString =
         breakpointNumber > 1 ? `${breakpointNumber} ${pointType}` : pointType;
     }

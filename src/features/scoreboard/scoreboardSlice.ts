@@ -65,15 +65,18 @@ const initialState: scoreboardState = {
   id: uuidv4(),
 };
 
-function checkPointType(
-  state: scoreboardState,
-  winnerPoints: number,
-  loserPoints: number,
-  pointType: PointTypes
-) {
-  if (isLastGamePoint(winnerPoints, loserPoints)) {
-    state.pointType = pointType;
-    state.breakpointNumber = winnerPoints - loserPoints;
+function checkBreackPoint(state: scoreboardState) {
+  const receiverPoints: number = getPlayerPoints(
+    state,
+    state.currentServer !== PlayerTypes.FIRST_PLAYER
+  );
+  const serverPoints: number = getPlayerPoints(
+    state,
+    state.currentServer === PlayerTypes.FIRST_PLAYER
+  );
+  if (isLastGamePoint(receiverPoints, serverPoints)) {
+    state.pointType = PointTypes.BREAK_POINT;
+    state.breakpointNumber = receiverPoints - serverPoints;
   } else {
     state.pointType = PointTypes.DEFAULT_POINT;
   }
@@ -93,8 +96,8 @@ function isLastSetGame(winnerGames: number, loserGames: number) {
 
 function addGameToWinner(state: scoreboardState, isFirstPlayer: boolean) {
   isFirstPlayer
-    ? (state.sets[state.currentSet].firstPlayerGames += 1)
-    : (state.sets[state.currentSet].secondPlayerGames += 1);
+    ? state.sets[state.currentSet].firstPlayerGames++
+    : state.sets[state.currentSet].secondPlayerGames++;
 }
 
 function addPointToWinner(
@@ -125,19 +128,90 @@ function getPlayerGames(
     : state.sets[state.currentSet].secondPlayerGames;
 }
 
-// The function below is called a thunk and allows us to perform async logic. It
-// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
-// will call the thunk with the `dispatch` function as the first argument. Async
-// code can then be executed and other actions can be dispatched. Thunks are
-// typically used to make async requests.
-// export const incrementAsync = createAsyncThunk(
-//   'scoreboard/fetchCount',
-//   async (amount: number) => {
-//     const response = await fetchCount(amount);
-//     // The value we return becomes the `fulfilled` action payload
-//     return response.data;
-//   }
-// );
+function checkSetPoint(state: scoreboardState, isFirstPlayer: boolean) {
+  const winnerGames = getPlayerGames(state, isFirstPlayer);
+  const loserGames = getPlayerGames(state, !isFirstPlayer);
+  const winnerPoints = getPlayerPoints(state, isFirstPlayer);
+  const loserPoints = getPlayerPoints(state, !isFirstPlayer);
+
+  const checkPointCondition =
+    (isLastGamePoint(winnerPoints, loserPoints) &&
+      isLastSetGame(winnerGames, loserGames)) ||
+    (isLastGamePoint(loserPoints, winnerPoints) &&
+      isLastSetGame(loserGames, winnerGames));
+
+  const tieBreakCheckPointCondition =
+    state.isTiebreak &&
+    (isLastGamePoint(winnerPoints, loserPoints, 7) ||
+      isLastGamePoint(loserPoints, winnerPoints, 7));
+
+  if (
+    (checkPointCondition && !state.isTiebreak) ||
+    tieBreakCheckPointCondition
+  ) {
+    console.log("setpoin");
+
+    state.pointType = PointTypes.SET_POINT;
+    state.breakpointNumber = Math.abs(winnerPoints - loserPoints);
+
+    // If it is last set than it's match point.
+    if (state.currentSet === state.sets.length - 1) {
+      console.log("match point");
+
+      state.pointType = PointTypes.MATCH_POINT;
+    }
+  } else if (state.pointType === PointTypes.SET_POINT) {
+    state.pointType = PointTypes.DEFAULT_POINT;
+  }
+}
+
+function handleTiebreak(
+  state: scoreboardState,
+  isFirstPlayer: boolean,
+  winnerPoints: number,
+  loserPoints: number
+) {
+  // Change current server.
+  if ((winnerPoints + loserPoints) % 2 === 0) {
+    scoreboardSlice.caseReducers.changeCurrentServer(state);
+  }
+  // Add point to winner.
+  addPointToWinner(state, isFirstPlayer);
+  // Check if win tiebreak(set).
+  if (isLastGamePoint(winnerPoints, loserPoints, 7)) {
+    addGameToWinner(state, isFirstPlayer);
+
+    // Saving tiebreak points.
+    state.sets[state.currentSet].firstPlayerTiebreakPoints =
+      state.currentGame.firstPlayerPoints;
+    state.sets[state.currentSet].secondPlayerTiebreakPoints =
+      state.currentGame.secondPlayerPoints;
+    // Moving to next set.
+    state.currentSet++;
+    // Reseting game.
+    state.isTiebreak = false;
+    scoreboardSlice.caseReducers.resetCurrentGame(state);
+  }
+}
+
+function handleGameWin(state: scoreboardState, isFirstPlayer: boolean) {
+  scoreboardSlice.caseReducers.resetCurrentGame(state);
+  !state.isTiebreak && scoreboardSlice.caseReducers.changeCurrentServer(state);
+
+  const winnerGames = getPlayerGames(state, isFirstPlayer);
+  const loserGames = getPlayerGames(state, !isFirstPlayer);
+
+  addGameToWinner(state, isFirstPlayer);
+  // Check if win set.
+  if (isLastSetGame(winnerGames, loserGames)) {
+    state.currentSet++;
+  }
+  // Check if tiebreak
+  else if (winnerGames === 5 && loserGames === 6) {
+    state.isTiebreak = true;
+    state.currentServer = PlayerTypes.FIRST_PLAYER;
+  }
+}
 
 export const scoreboardSlice = createSlice({
   name: "scoreboard",
@@ -146,57 +220,21 @@ export const scoreboardSlice = createSlice({
   reducers: {
     addPoint: (state, { payload }: PayloadAction<PlayerTypes>) => {
       const isFirstPlayer = payload === PlayerTypes.FIRST_PLAYER;
-      const winnerPoints: number = getPlayerPoints(state, isFirstPlayer);
-      const loserPoints: number = getPlayerPoints(state, !isFirstPlayer);
+      let winnerPoints: number = getPlayerPoints(state, isFirstPlayer);
+      let loserPoints: number = getPlayerPoints(state, !isFirstPlayer);
 
       // If there's a tiebreak.
       if (state.isTiebreak) {
-        // Change current server.
-        if ((winnerPoints + loserPoints) % 2 === 0) {
-          scoreboardSlice.caseReducers.changeCurrentServer(state);
-        }
-        // Add point to winner.
-        addPointToWinner(state, isFirstPlayer);
-        // Check if win tiebreak(set).
-        if (isLastGamePoint(winnerPoints, loserPoints, 7)) {
-          addGameToWinner(state, isFirstPlayer);
-
-          // Saving tiebreak points.
-          state.sets[state.currentSet].firstPlayerTiebreakPoints =
-            state.currentGame.firstPlayerPoints;
-          state.sets[state.currentSet].secondPlayerTiebreakPoints =
-            state.currentGame.secondPlayerPoints;
-          // Moving to next set.
-          state.currentSet += 1;
-          // Reseting game.
-          state.isTiebreak = false;
-          scoreboardSlice.caseReducers.resetCurrentGame(state);
-        }
+        handleTiebreak(state, isFirstPlayer, winnerPoints, loserPoints);
       } else {
-        // Check if deuce.
+        // Check deuce.
         if (winnerPoints === 2 && loserPoints === 3) {
           state.isDeuce = true;
         }
 
-        // Check if win game.
+        // Check game win.
         if ((winnerPoints === 3 && loserPoints < 3) || winnerPoints === 4) {
-          scoreboardSlice.caseReducers.resetCurrentGame(state);
-          !state.isTiebreak &&
-            scoreboardSlice.caseReducers.changeCurrentServer(state);
-
-          const winnerGames = getPlayerGames(state, isFirstPlayer);
-          const loserGames = getPlayerGames(state, !isFirstPlayer);
-
-          addGameToWinner(state, isFirstPlayer);
-          // Check if win set.
-          if (isLastSetGame(winnerGames, loserGames)) {
-            state.currentSet += 1;
-          }
-          // Check if tiebreak
-          else if (winnerGames === 5 && loserGames === 6) {
-            state.isTiebreak = true;
-            state.currentServer = PlayerTypes.FIRST_PLAYER;
-          }
+          handleGameWin(state, isFirstPlayer);
         }
         // Handle deuce(substract point).
         else if (winnerPoints === 3 && loserPoints === 4) {
@@ -207,39 +245,11 @@ export const scoreboardSlice = createSlice({
           addPointToWinner(state, isFirstPlayer);
         }
 
-        // Check if breakpoint.
-        const serverPoints: number = getPlayerPoints(
-          state,
-          state.currentServer === PlayerTypes.FIRST_PLAYER
-        );
-        const receiverPoints: number = getPlayerPoints(
-          state,
-          state.currentServer !== PlayerTypes.FIRST_PLAYER
-        );
-        checkPointType(
-          state,
-          receiverPoints,
-          serverPoints,
-          PointTypes.BREAK_POINT
-        );
-        // Check if checkpoint.
-        const winnerGames = getPlayerGames(state, isFirstPlayer);
-
-        const loserGames = getPlayerGames(state, !isFirstPlayer);
-        console.log(winnerGames, loserGames, winnerPoints, loserPoints);
-
-        if (
-          winnerPoints >= 2 &&
-          winnerPoints - loserPoints >= 1 &&
-          ((winnerGames >= 5 && winnerGames - loserGames >= 1) ||
-            (loserGames >= 5 && loserGames - winnerGames >= 1))
-        ) {
-          console.log("setpoin");
-
-          state.pointType = PointTypes.SET_POINT;
-          state.breakpointNumber = winnerPoints - loserPoints;
-        }
+        // Check if break point.
+        checkBreackPoint(state);
       }
+      // Check if set point.
+      checkSetPoint(state, isFirstPlayer);
     },
     resetCurrentGame: (state) => {
       state.currentGame = initialState.currentGame;
