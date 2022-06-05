@@ -25,7 +25,7 @@ const Scoreboard = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pt-32">
+    <div className="max-w-4xl mx-auto shadow-2xl">
       <div className="relative">
         {getPointType() !== PointTypes.DEFAULT_POINT && (
           <span className="point-type absolute -top-11 left-0 text-lg px-8 py-2 bg-slate-800 text-white rounded-md">

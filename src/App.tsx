@@ -7,7 +7,7 @@ function App() {
   const dispatch = useAppDispatch();
 
   return (
-    <div className="app text-center bg-green-100 w-full h-full">
+    <div className="app text-center  pt-32 bg-green-100 w-full h-full">
       <Scoreboard />
       <button
         onClick={() => dispatch(resetMatch())}

@@ -26,6 +26,9 @@ export function convertToGamePoints(points: number): string {
 }
 
 export function generateEmptySets(setsNumber: number): ISet[] {
+  if (setsNumber > 3) {
+    setsNumber = 3;
+  }
   const sets: ISet[] = new Array(setsNumber)
     .fill({
       firstPlayerGames: 0,
@@ -36,6 +39,15 @@ export function generateEmptySets(setsNumber: number): ISet[] {
     });
 
   return sets;
+}
+
+export function generateEmptySet(): ISet {
+  const set: ISet = {
+    firstPlayerGames: 0,
+    secondPlayerGames: 0,
+    id: uuidv4(),
+  };
+  return set;
 }
 
 export function checkIfFirstPlayer(
@@ -63,9 +75,10 @@ export function addGameToWinner(
   state: scoreboardState,
   isFirstPlayer: boolean
 ) {
+  const currentSet = state.sets[state.currentSet];
   isFirstPlayer
-    ? state.sets[state.currentSet].firstPlayerGames++
-    : state.sets[state.currentSet].secondPlayerGames++;
+    ? currentSet.firstPlayerGames++
+    : currentSet.secondPlayerGames++;
 }
 
 export function addPointToWinner(
@@ -94,4 +107,22 @@ export function getPlayerGames(
   return isFirstPlayer
     ? state.sets[state.currentSet].firstPlayerGames
     : state.sets[state.currentSet].secondPlayerGames;
+}
+
+export function isLastSet(state: scoreboardState) {
+  return state.currentSet === state.sets.length - 1;
+}
+
+export function getScore(state: scoreboardState) {
+  let firstPlayerScore = 0;
+  let secondPlayerScore = 0;
+  state.sets.forEach((set) => {
+    if (set.winner) {
+      set.winner === PlayerTypes.FIRST_PLAYER
+        ? firstPlayerScore++
+        : secondPlayerScore++;
+    }
+  });
+
+  return [firstPlayerScore, secondPlayerScore];
 }

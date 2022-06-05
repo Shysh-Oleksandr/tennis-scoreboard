@@ -2,10 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import {
   addGameToWinner,
+  generateEmptySet,
   generateEmptySets,
   getPlayerGames,
   getPlayerPoints,
+  getScore,
   isLastGamePoint,
+  isLastSet,
   isLastSetGame,
 } from "../../utils/functions";
 import { addPointToWinner } from "./../../utils/functions";
@@ -37,6 +40,7 @@ export interface ISet {
   secondPlayerGames: number;
   firstPlayerTiebreakPoints?: number;
   secondPlayerTiebreakPoints?: number;
+  winner?: PlayerTypes;
   id: string;
 }
 
@@ -50,6 +54,7 @@ export interface scoreboardState {
   pointType: PointTypes;
   breakpointNumber: number;
   currentSet: number;
+  bestOfNumber: number;
   id: string;
 }
 
@@ -70,6 +75,7 @@ const initialState: scoreboardState = {
 
   currentServer: PlayerTypes.FIRST_PLAYER,
   sets: generateEmptySets(3),
+  bestOfNumber: 3,
   id: uuidv4(),
 };
 
@@ -162,7 +168,32 @@ function handleGameWin(state: scoreboardState, isFirstPlayer: boolean) {
   addGameToWinner(state, isFirstPlayer);
   // Check if win set.
   if (isLastSetGame(winnerGames, loserGames)) {
-    state.currentSet++;
+    // Define this set's winner.
+    state.sets[state.currentSet].winner = isFirstPlayer
+      ? PlayerTypes.FIRST_PLAYER
+      : PlayerTypes.SECOND_PLAYER;
+
+    const [firstPlayerScore, secondPlayerScore] = getScore(state);
+    console.log(`${firstPlayerScore}:${secondPlayerScore}`);
+    const setsToWin = Math.ceil(state.bestOfNumber / 2);
+
+    // Check if it is the last visible set,
+    if (isLastSet(state)) {
+      const winnerName = isFirstPlayer
+        ? state.players[0].name
+        : state.players[1].name;
+
+      // If none of players won enough sets.
+      if (firstPlayerScore < setsToWin && secondPlayerScore < setsToWin) {
+        // Add a new visible set.
+        state.sets = [...state.sets, generateEmptySet()];
+        state.currentSet++;
+      } else {
+        console.log(winnerName);
+      }
+    } else {
+      state.currentSet++;
+    }
   }
   // Check if tiebreak
   else if (winnerGames === 5 && loserGames === 6) {
@@ -217,8 +248,6 @@ export const scoreboardSlice = createSlice({
       state.breakpointNumber = 0;
     },
     resetMatch: (state) => {
-      console.log("reset");
-
       return { ...initialState, players: state.players };
     },
     changeCurrentServer: (state) => {
