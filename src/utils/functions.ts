@@ -1,4 +1,8 @@
-import { ISet, PlayerTypes } from "../features/scoreboard/scoreboardSlice";
+import {
+  ISet,
+  PlayerTypes,
+  scoreboardState,
+} from "../features/scoreboard/scoreboardSlice";
 import { v4 as uuidv4 } from "uuid";
 import { IPlayer } from "./../features/scoreboard/scoreboardSlice";
 
@@ -41,4 +45,53 @@ export function checkIfFirstPlayer(
   return players[0].id === id
     ? PlayerTypes.FIRST_PLAYER
     : PlayerTypes.SECOND_PLAYER;
+}
+
+export function isLastGamePoint(
+  winnerPoints: number,
+  loserPoints: number,
+  pointToWin: number = 4
+) {
+  return winnerPoints >= pointToWin - 1 && winnerPoints - loserPoints >= 1;
+}
+
+export function isLastSetGame(winnerGames: number, loserGames: number) {
+  return winnerGames >= 5 && winnerGames - loserGames >= 1;
+}
+
+export function addGameToWinner(
+  state: scoreboardState,
+  isFirstPlayer: boolean
+) {
+  isFirstPlayer
+    ? state.sets[state.currentSet].firstPlayerGames++
+    : state.sets[state.currentSet].secondPlayerGames++;
+}
+
+export function addPointToWinner(
+  state: scoreboardState,
+  isFirstPlayer: boolean,
+  pointToAdd: number = 1
+) {
+  isFirstPlayer
+    ? (state.currentGame.firstPlayerPoints += pointToAdd)
+    : (state.currentGame.secondPlayerPoints += pointToAdd);
+}
+
+export function getPlayerPoints(
+  state: scoreboardState,
+  isFirstPlayer: boolean
+): number {
+  return isFirstPlayer
+    ? state.currentGame.firstPlayerPoints
+    : state.currentGame.secondPlayerPoints;
+}
+
+export function getPlayerGames(
+  state: scoreboardState,
+  isFirstPlayer: boolean
+): number {
+  return isFirstPlayer
+    ? state.sets[state.currentSet].firstPlayerGames
+    : state.sets[state.currentSet].secondPlayerGames;
 }

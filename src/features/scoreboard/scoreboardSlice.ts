@@ -1,6 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import { generateEmptySets } from "../../utils/functions";
+import {
+  addGameToWinner,
+  generateEmptySets,
+  getPlayerGames,
+  getPlayerPoints,
+  isLastGamePoint,
+  isLastSetGame,
+} from "../../utils/functions";
+import { addPointToWinner } from "./../../utils/functions";
 
 export enum PointTypes {
   DEFAULT_POINT = "DEFAULT POINT",
@@ -82,52 +90,6 @@ function checkBreackPoint(state: scoreboardState) {
   }
 }
 
-function isLastGamePoint(
-  winnerPoints: number,
-  loserPoints: number,
-  pointToWin: number = 4
-) {
-  return winnerPoints >= pointToWin - 1 && winnerPoints - loserPoints >= 1;
-}
-
-function isLastSetGame(winnerGames: number, loserGames: number) {
-  return winnerGames >= 5 && winnerGames - loserGames >= 1;
-}
-
-function addGameToWinner(state: scoreboardState, isFirstPlayer: boolean) {
-  isFirstPlayer
-    ? state.sets[state.currentSet].firstPlayerGames++
-    : state.sets[state.currentSet].secondPlayerGames++;
-}
-
-function addPointToWinner(
-  state: scoreboardState,
-  isFirstPlayer: boolean,
-  pointToAdd: number = 1
-) {
-  isFirstPlayer
-    ? (state.currentGame.firstPlayerPoints += pointToAdd)
-    : (state.currentGame.secondPlayerPoints += pointToAdd);
-}
-
-function getPlayerPoints(
-  state: scoreboardState,
-  isFirstPlayer: boolean
-): number {
-  return isFirstPlayer
-    ? state.currentGame.firstPlayerPoints
-    : state.currentGame.secondPlayerPoints;
-}
-
-function getPlayerGames(
-  state: scoreboardState,
-  isFirstPlayer: boolean
-): number {
-  return isFirstPlayer
-    ? state.sets[state.currentSet].firstPlayerGames
-    : state.sets[state.currentSet].secondPlayerGames;
-}
-
 function checkSetPoint(state: scoreboardState, isFirstPlayer: boolean) {
   const winnerGames = getPlayerGames(state, isFirstPlayer);
   const loserGames = getPlayerGames(state, !isFirstPlayer);
@@ -149,15 +111,11 @@ function checkSetPoint(state: scoreboardState, isFirstPlayer: boolean) {
     (checkPointCondition && !state.isTiebreak) ||
     tieBreakCheckPointCondition
   ) {
-    console.log("setpoin");
-
     state.pointType = PointTypes.SET_POINT;
     state.breakpointNumber = Math.abs(winnerPoints - loserPoints);
 
     // If it is last set than it's match point.
     if (state.currentSet === state.sets.length - 1) {
-      console.log("match point");
-
       state.pointType = PointTypes.MATCH_POINT;
     }
   } else if (state.pointType === PointTypes.SET_POINT) {
@@ -258,6 +216,11 @@ export const scoreboardSlice = createSlice({
       state.pointType = PointTypes.DEFAULT_POINT;
       state.breakpointNumber = 0;
     },
+    resetMatch: (state) => {
+      console.log("reset");
+
+      return { ...initialState, players: state.players };
+    },
     changeCurrentServer: (state) => {
       // Change a current server.
       state.currentServer =
@@ -268,6 +231,6 @@ export const scoreboardSlice = createSlice({
   },
 });
 
-export const { addPoint } = scoreboardSlice.actions;
+export const { addPoint, resetMatch } = scoreboardSlice.actions;
 
 export default scoreboardSlice.reducer;
