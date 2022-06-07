@@ -126,3 +126,18 @@ export function getScore(state: scoreboardState) {
 
   return [firstPlayerScore, secondPlayerScore];
 }
+
+export function convertMsToHM(milliseconds: number) {
+  let seconds = Math.floor(milliseconds / 1000);
+  let minutes = Math.floor(seconds / 60);
+  let hours = Math.floor(minutes / 60);
+
+  seconds = seconds % 60;
+
+  minutes = minutes % 60;
+
+  return [seconds, minutes, hours];
+}
+export function formatTime(time: number) {
+  return time < 10 ? `0${time}` : time;
+}

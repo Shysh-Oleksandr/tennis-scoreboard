@@ -1,6 +1,7 @@
-import React from "react";
-import Scoreboard from "./components/Scoreboard";
+import React, { useEffect } from "react";
 import { useAppDispatch } from "./app/hooks";
+import Scoreboard from "./components/Scoreboard";
+import Stopwatch from "./components/Stopwatch";
 import { resetMatch } from "./features/scoreboard/scoreboardSlice";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       >
         Restart
       </button>
+      <Stopwatch />
     </div>
   );
 }
