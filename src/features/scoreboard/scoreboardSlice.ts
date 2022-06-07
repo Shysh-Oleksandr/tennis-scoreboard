@@ -13,6 +13,11 @@ import {
 } from "../../utils/functions";
 import { addPointToWinner } from "./../../utils/functions";
 
+window.onunload = function () {
+  sessionStorage.removeItem("previous_state");
+  sessionStorage.removeItem("redo_state");
+};
+
 export enum PointTypes {
   DEFAULT_POINT = "DEFAULT POINT",
   BREAK_POINT = "BREAK POINT",
@@ -210,6 +215,8 @@ export const scoreboardSlice = createSlice({
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
     addPoint: (state, { payload }: PayloadAction<PlayerTypes>) => {
+      sessionStorage.setItem("previous_state", JSON.stringify(state));
+
       const isFirstPlayer = payload === PlayerTypes.FIRST_PLAYER;
       let winnerPoints: number = getPlayerPoints(state, isFirstPlayer);
       let loserPoints: number = getPlayerPoints(state, !isFirstPlayer);
@@ -241,6 +248,7 @@ export const scoreboardSlice = createSlice({
       }
       // Check if set point.
       checkSetPoint(state, isFirstPlayer);
+      sessionStorage.setItem("redo_state", JSON.stringify(state));
     },
     resetCurrentGame: (state) => {
       state.currentGame = initialState.currentGame;
@@ -256,6 +264,20 @@ export const scoreboardSlice = createSlice({
         wasRestarted: !state.wasRestarted,
       };
     },
+    undo: () => {
+      const value = sessionStorage.getItem("previous_state");
+      if (value) {
+        const previous_state: scoreboardState = JSON.parse(value);
+        return previous_state;
+      }
+    },
+    redo: () => {
+      const value = sessionStorage.getItem("redo_state");
+      if (value) {
+        const previous_state: scoreboardState = JSON.parse(value);
+        return previous_state;
+      }
+    },
 
     changeCurrentServer: (state) => {
       // Change a current server.
@@ -267,6 +289,6 @@ export const scoreboardSlice = createSlice({
   },
 });
 
-export const { addPoint, resetMatch } = scoreboardSlice.actions;
+export const { addPoint, resetMatch, undo, redo } = scoreboardSlice.actions;
 
 export default scoreboardSlice.reducer;

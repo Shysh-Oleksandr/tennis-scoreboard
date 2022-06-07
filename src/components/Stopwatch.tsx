@@ -6,7 +6,7 @@ import { convertMsToHM } from "./../utils/functions";
 const Stopwatch = () => {
   const { wasRestarted } = useAppSelector((store) => store.scoreboard);
   const [time, setTime] = useState(0);
-  const [running, setRunning] = useState(false);
+  const [running, setRunning] = useState(true);
   let stopwatchRef = useRef() as MutableRefObject<NodeJS.Timer>;
   useEffect(() => {
     if (running) {
