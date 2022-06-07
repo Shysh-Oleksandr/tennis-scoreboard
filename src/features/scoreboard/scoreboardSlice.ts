@@ -65,10 +65,7 @@ export interface scoreboardState {
 }
 
 const initialState: scoreboardState = {
-  players: [
-    { name: "John", id: uuidv4() },
-    { name: "Frank", id: uuidv4() },
-  ],
+  players: [],
   currentGame: {
     firstPlayerPoints: 0,
     secondPlayerPoints: 0,
@@ -79,9 +76,8 @@ const initialState: scoreboardState = {
   wasRestarted: false,
   breakpointNumber: 0,
   pointType: PointTypes.DEFAULT_POINT,
-
   currentServer: PlayerTypes.FIRST_PLAYER,
-  sets: generateEmptySets(3),
+  sets: [],
   bestOfNumber: 3,
   id: uuidv4(),
 };
@@ -182,17 +178,22 @@ function handleGameWin(state: scoreboardState, isFirstPlayer: boolean) {
 
     const [firstPlayerScore, secondPlayerScore] = getScore(state);
     console.log(`${firstPlayerScore}:${secondPlayerScore}`);
-    const setsToWin = Math.ceil(state.bestOfNumber / 2);
+    const setsToWin =
+      state.bestOfNumber === 1 ? 1 : Math.floor(state.bestOfNumber / 2) + 1;
+    console.log(setsToWin);
 
     // Check if it is the last visible set,
     if (isLastSet(state)) {
       const winnerName = isFirstPlayer
         ? state.players[0].name
         : state.players[1].name;
+      console.log("last set");
 
       // If none of players won enough sets.
       if (firstPlayerScore < setsToWin && secondPlayerScore < setsToWin) {
         // Add a new visible set.
+        console.log("add set");
+
         state.sets = [...state.sets, generateEmptySet()];
         state.currentSet++;
       } else {
@@ -261,6 +262,8 @@ export const scoreboardSlice = createSlice({
       return {
         ...initialState,
         players: state.players,
+        bestOfNumber: state.bestOfNumber,
+        sets: generateEmptySets(state.bestOfNumber),
         wasRestarted: !state.wasRestarted,
       };
     },
@@ -278,7 +281,6 @@ export const scoreboardSlice = createSlice({
         return previous_state;
       }
     },
-
     changeCurrentServer: (state) => {
       // Change a current server.
       state.currentServer =
@@ -286,9 +288,17 @@ export const scoreboardSlice = createSlice({
           ? PlayerTypes.SECOND_PLAYER
           : PlayerTypes.FIRST_PLAYER;
     },
+    setPlayers: (state, { payload }: PayloadAction<IPlayer[]>) => {
+      state.players = payload;
+    },
+    setSetsNumber: (state, { payload }: PayloadAction<number>) => {
+      state.bestOfNumber = payload;
+      state.sets = generateEmptySets(payload);
+    },
   },
 });
 
-export const { addPoint, resetMatch, undo, redo } = scoreboardSlice.actions;
+export const { addPoint, resetMatch, undo, redo, setPlayers, setSetsNumber } =
+  scoreboardSlice.actions;
 
 export default scoreboardSlice.reducer;

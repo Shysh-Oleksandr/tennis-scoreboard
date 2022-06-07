@@ -1,9 +1,11 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import scoreboardReducer from "../features/scoreboard/scoreboardSlice";
+import menuReducer from "../features/scoreboard/menuSlice";
 
 export const store = configureStore({
   reducer: {
     scoreboard: scoreboardReducer,
+    menu: menuReducer,
   },
 });
 

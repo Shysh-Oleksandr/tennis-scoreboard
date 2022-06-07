@@ -141,3 +141,16 @@ export function convertMsToHM(milliseconds: number) {
 export function formatTime(time: number) {
   return time < 10 ? `0${time}` : time;
 }
+
+export function getPlayerName(
+  firstName: string | undefined,
+  secondName: string | undefined,
+  firstPlayer: boolean
+): string {
+  let playerName = firstName || `Player ${firstPlayer ? 1 : 2}`;
+  if (secondName) {
+    playerName += ` / ${secondName}`;
+  }
+
+  return playerName;
+}
