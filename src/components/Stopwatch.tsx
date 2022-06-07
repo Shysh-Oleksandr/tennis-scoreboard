@@ -1,9 +1,10 @@
-import React, { MutableRefObject, useRef, useState } from "react";
-import { useEffect } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import { formatTime } from "../utils/functions";
+import { useAppSelector } from "./../app/hooks";
 import { convertMsToHM } from "./../utils/functions";
 
 const Stopwatch = () => {
+  const { wasRestarted } = useAppSelector((store) => store.scoreboard);
   const [time, setTime] = useState(0);
   const [running, setRunning] = useState(false);
   let stopwatchRef = useRef() as MutableRefObject<NodeJS.Timer>;
@@ -18,9 +19,13 @@ const Stopwatch = () => {
     return () => clearInterval(stopwatchRef.current);
   }, [running]);
 
+  useEffect(() => {
+    setTime(0);
+  }, [wasRestarted]);
+
   return (
     <div className="mt-16">
-      <div className="text-3xl font-bold drop-shadow-xl">
+      <div className="text-4xl font-bold drop-shadow-xl">
         <span>{formatTime(convertMsToHM(time)[2])}:</span>
         <span>{formatTime(convertMsToHM(time)[1])}:</span>
         <span>{formatTime(convertMsToHM(time)[0])}</span>
@@ -55,7 +60,6 @@ const Stopwatch = () => {
             </svg>
           )}
         </button>
-        {/* <button onClick={() => setTime(0)}>Reset</button> */}
       </div>
     </div>
   );

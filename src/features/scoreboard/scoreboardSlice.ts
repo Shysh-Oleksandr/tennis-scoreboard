@@ -52,6 +52,7 @@ export interface scoreboardState {
   isTiebreak: boolean;
   isDeuce: boolean;
   pointType: PointTypes;
+  wasRestarted: boolean;
   breakpointNumber: number;
   currentSet: number;
   bestOfNumber: number;
@@ -70,6 +71,7 @@ const initialState: scoreboardState = {
   currentSet: 0,
   isTiebreak: false,
   isDeuce: false,
+  wasRestarted: false,
   breakpointNumber: 0,
   pointType: PointTypes.DEFAULT_POINT,
 
@@ -248,8 +250,13 @@ export const scoreboardSlice = createSlice({
       state.breakpointNumber = 0;
     },
     resetMatch: (state) => {
-      return { ...initialState, players: state.players };
+      return {
+        ...initialState,
+        players: state.players,
+        wasRestarted: !state.wasRestarted,
+      };
     },
+
     changeCurrentServer: (state) => {
       // Change a current server.
       state.currentServer =

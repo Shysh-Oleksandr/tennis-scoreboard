@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useAppDispatch } from "./app/hooks";
 import Scoreboard from "./components/Scoreboard";
 import Stopwatch from "./components/Stopwatch";
