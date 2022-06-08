@@ -34,6 +34,7 @@ aside {
 html,
 body,
 #root {
+  @apply bg-teal-900;
   height: 100%;
   width: 100%;
   font-size: 100%;

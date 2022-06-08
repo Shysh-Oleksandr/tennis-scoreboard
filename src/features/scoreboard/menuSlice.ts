@@ -7,12 +7,10 @@ export interface IPlayer {
 
 export interface menuState {
   isStarted: boolean;
-  bestOfSets: number;
 }
 
 const initialState: menuState = {
   isStarted: false,
-  bestOfSets: 3,
 };
 
 export const menuSlice = createSlice({
@@ -22,6 +20,8 @@ export const menuSlice = createSlice({
   reducers: {
     startGame: (state) => {
       state.isStarted = true;
+      sessionStorage.removeItem("previous_state");
+      sessionStorage.removeItem("redo_state");
     },
     backToMenu: (state) => {
       state.isStarted = false;

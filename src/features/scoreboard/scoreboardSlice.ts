@@ -32,6 +32,7 @@ export enum PlayerTypes {
 
 export interface IPlayer {
   name: string;
+  isWinner?: boolean;
   id: string;
 }
 
@@ -58,9 +59,11 @@ export interface scoreboardState {
   isDeuce: boolean;
   pointType: PointTypes;
   wasRestarted: boolean;
+  isPaused: boolean;
   breakpointNumber: number;
   currentSet: number;
   bestOfNumber: number;
+  isWon: boolean;
   id: string;
 }
 
@@ -74,11 +77,13 @@ const initialState: scoreboardState = {
   isTiebreak: false,
   isDeuce: false,
   wasRestarted: false,
+  isPaused: false,
   breakpointNumber: 0,
   pointType: PointTypes.DEFAULT_POINT,
   currentServer: PlayerTypes.FIRST_PLAYER,
   sets: [],
   bestOfNumber: 3,
+  isWon: false,
   id: uuidv4(),
 };
 
@@ -177,27 +182,24 @@ function handleGameWin(state: scoreboardState, isFirstPlayer: boolean) {
       : PlayerTypes.SECOND_PLAYER;
 
     const [firstPlayerScore, secondPlayerScore] = getScore(state);
-    console.log(`${firstPlayerScore}:${secondPlayerScore}`);
     const setsToWin =
       state.bestOfNumber === 1 ? 1 : Math.floor(state.bestOfNumber / 2) + 1;
-    console.log(setsToWin);
 
     // Check if it is the last visible set,
     if (isLastSet(state)) {
-      const winnerName = isFirstPlayer
-        ? state.players[0].name
-        : state.players[1].name;
-      console.log("last set");
-
       // If none of players won enough sets.
       if (firstPlayerScore < setsToWin && secondPlayerScore < setsToWin) {
         // Add a new visible set.
-        console.log("add set");
-
         state.sets = [...state.sets, generateEmptySet()];
         state.currentSet++;
       } else {
-        console.log(winnerName);
+        state.isWon = true;
+        state.isPaused = true;
+        if (isFirstPlayer) {
+          state.players[0].isWinner = true;
+        } else {
+          state.players[1].isWinner = true;
+        }
       }
     } else {
       state.currentSet++;
@@ -216,7 +218,11 @@ export const scoreboardSlice = createSlice({
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
     addPoint: (state, { payload }: PayloadAction<PlayerTypes>) => {
+      if (state.isWon) return;
+
       sessionStorage.setItem("previous_state", JSON.stringify(state));
+
+      state.isPaused = false;
 
       const isFirstPlayer = payload === PlayerTypes.FIRST_PLAYER;
       let winnerPoints: number = getPlayerPoints(state, isFirstPlayer);
@@ -295,10 +301,20 @@ export const scoreboardSlice = createSlice({
       state.bestOfNumber = payload;
       state.sets = generateEmptySets(payload);
     },
+    setIsPaused: (state, { payload }: PayloadAction<boolean>) => {
+      state.isPaused = payload;
+    },
   },
 });
 
-export const { addPoint, resetMatch, undo, redo, setPlayers, setSetsNumber } =
-  scoreboardSlice.actions;
+export const {
+  addPoint,
+  resetMatch,
+  undo,
+  redo,
+  setPlayers,
+  setSetsNumber,
+  setIsPaused,
+} = scoreboardSlice.actions;
 
 export default scoreboardSlice.reducer;

@@ -147,8 +147,8 @@ export function getPlayerName(
   secondName: string | undefined,
   firstPlayer: boolean
 ): string {
-  let playerName = firstName || `Player ${firstPlayer ? 1 : 2}`;
-  if (secondName) {
+  let playerName = firstName?.trim() || `Player ${firstPlayer ? 1 : 2}`;
+  if (secondName?.trim()) {
     playerName += ` / ${secondName}`;
   }
 

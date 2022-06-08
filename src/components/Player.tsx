@@ -7,13 +7,14 @@ import {
 } from "../features/scoreboard/scoreboardSlice";
 import { useAppDispatch } from "./../app/hooks";
 import { convertToGamePoints } from "./../utils/functions";
+import { GiCrown } from "react-icons/gi";
 
 interface PlayerProps extends IPlayer {
   playerType: PlayerTypes;
 }
 
-const Player = ({ name, id, playerType }: PlayerProps) => {
-  const { sets, currentGame, currentServer, currentSet, isTiebreak } =
+const Player = ({ name, isWinner, playerType }: PlayerProps) => {
+  const { sets, currentGame, currentServer, currentSet, isTiebreak, isWon } =
     useAppSelector((store) => store.scoreboard);
   const dispatch = useAppDispatch();
 
@@ -25,12 +26,19 @@ const Player = ({ name, id, playerType }: PlayerProps) => {
 
   return (
     <div className="bg-slate-700 relative rounded-md text-white border-l-8 border-solid border-teal-500 flex items-center justify-between">
-      <h3 className="font-bold text-2xl text-left p-3">{name}</h3>
+      <h3 className="font-bold text-2xl text-left p-3 relative">
+        {name}
+        {isWinner && (
+          <span className="absolute top-1/2 -translate-y-1/2 -right-6 z-10 text-3xl">
+            <GiCrown />
+          </span>
+        )}
+      </h3>
       <div
         className="sets relative cursor-pointer"
         onClick={() => dispatch(addPoint(playerType))}
       >
-        {currentServer === playerType && (
+        {currentServer === playerType && !isWon && (
           <span className="absolute -left-8 top-1/2 -translate-y-1/2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
