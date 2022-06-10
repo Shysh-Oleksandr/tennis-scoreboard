@@ -90,13 +90,20 @@ h6 {
 }
 /*--------------------*/
 
+.app {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-image: url(https://images.unsplash.com/photo-1544287757-a8ab80d90b60?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8dGVubmlzJTIwY2xheXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=600&q=60);
+}
+
 .scoreboard {
   transition: all 0.3s ease;
-  background: rgb(10, 73, 58);
+  background: #0a493a;
   background: linear-gradient(
     138deg,
     rgba(10, 73, 58, 1) 0%,
-    rgba(36, 107, 90, 1) 100%
+    rgb(36, 107, 90) 100%
   );
 }
 
