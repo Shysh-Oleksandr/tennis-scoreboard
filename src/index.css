@@ -89,3 +89,54 @@ h6 {
   font-weight: 400;
 }
 /*--------------------*/
+
+.scoreboard {
+  transition: all 0.3s ease;
+  background: rgb(10, 73, 58);
+  background: linear-gradient(
+    138deg,
+    rgba(10, 73, 58, 1) 0%,
+    rgba(36, 107, 90, 1) 100%
+  );
+}
+
+.scoreboard:hover {
+  background: linear-gradient(
+    0deg,
+    rgba(10, 73, 58, 1) 0%,
+    rgba(36, 107, 90, 1) 100%
+  );
+}
+
+.scoreboard:hover .current-game {
+  background: linear-gradient(
+    -34deg,
+    rgba(234, 232, 234, 1) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
+}
+
+.scoreboard:hover .current-set {
+  background: linear-gradient(
+    -120deg,
+    rgba(54, 160, 110, 1) 0%,
+    rgba(70, 166, 118, 1) 100%
+  );
+}
+
+.current-set {
+  background: rgb(54, 160, 110);
+  background: linear-gradient(
+    0deg,
+    rgba(54, 160, 110, 1) 0%,
+    rgba(70, 166, 118, 1) 100%
+  );
+}
+.current-game {
+  background: rgb(234, 232, 234);
+  background: linear-gradient(
+    34deg,
+    rgba(234, 232, 234, 1) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
+}

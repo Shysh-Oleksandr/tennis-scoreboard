@@ -1,5 +1,5 @@
 import React, { RefObject, useId, useRef } from "react";
-import { startGame } from "../features/scoreboard/menuSlice";
+import { startGame } from "../features/menu/menuSlice";
 import { useAppDispatch } from "./../app/hooks";
 import PlayerInfo from "./PlayerInfo";
 import {

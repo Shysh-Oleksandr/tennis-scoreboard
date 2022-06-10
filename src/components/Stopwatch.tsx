@@ -34,9 +34,9 @@ const Stopwatch = () => {
   return (
     <div className="mt-16">
       <div className="text-4xl font-bold drop-shadow-xl">
-        <span>{formatTime(convertMsToHM(time)[2])}:</span>
-        <span>{formatTime(convertMsToHM(time)[1])}:</span>
-        <span>{formatTime(convertMsToHM(time)[0])}</span>
+        <span>{convertMsToHM(time)[2]}:</span>
+        <span>{formatTime(convertMsToHM(time)[1])}′</span>
+        <span>{formatTime(convertMsToHM(time)[0])}″</span>
       </div>
       <div className="buttons">
         {!isWon && (

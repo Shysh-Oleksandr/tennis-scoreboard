@@ -12,6 +12,13 @@ import {
   isLastSetGame,
 } from "../../utils/functions";
 import { addPointToWinner } from "./../../utils/functions";
+import {
+  AustralianOpenTheme,
+  RolandGarrosTheme,
+  USOpenTheme,
+  WimbledonTheme,
+  ThemeType,
+} from "./../../styles/Themes";
 
 window.onunload = function () {
   sessionStorage.removeItem("previous_state");
@@ -24,6 +31,30 @@ export enum PointTypes {
   SET_POINT = "SET POINT",
   MATCH_POINT = "MATCH POINT",
 }
+
+interface ITheme {
+  name: string;
+  theme: ThemeType;
+}
+
+export const themes: ITheme[] = [
+  {
+    name: "Astralian Open",
+    theme: AustralianOpenTheme,
+  },
+  {
+    name: "Rolland Garros",
+    theme: RolandGarrosTheme,
+  },
+  {
+    name: "Wimbledon",
+    theme: WimbledonTheme,
+  },
+  {
+    name: "The US Open",
+    theme: USOpenTheme,
+  },
+];
 
 export enum PlayerTypes {
   FIRST_PLAYER = "First player",
@@ -63,6 +94,7 @@ export interface scoreboardState {
   breakpointNumber: number;
   currentSet: number;
   bestOfNumber: number;
+  theme: ITheme;
   isWon: boolean;
   id: string;
 }
@@ -83,6 +115,7 @@ const initialState: scoreboardState = {
   currentServer: PlayerTypes.FIRST_PLAYER,
   sets: [],
   bestOfNumber: 3,
+  theme: themes[1],
   isWon: false,
   id: uuidv4(),
 };
@@ -137,6 +170,35 @@ function checkSetPoint(state: scoreboardState, isFirstPlayer: boolean) {
   }
 }
 
+function defineWinner(state: scoreboardState, isFirstPlayer: boolean) {
+  state.sets[state.currentSet].winner = isFirstPlayer
+    ? PlayerTypes.FIRST_PLAYER
+    : PlayerTypes.SECOND_PLAYER;
+
+  // Check if it is the last visible set,
+  if (isLastSet(state)) {
+    const [firstPlayerScore, secondPlayerScore] = getScore(state);
+    const setsToWin =
+      state.bestOfNumber === 1 ? 1 : Math.floor(state.bestOfNumber / 2) + 1;
+    // If none of players won enough sets.
+    if (firstPlayerScore < setsToWin && secondPlayerScore < setsToWin) {
+      // Add a new visible set.
+      state.sets = [...state.sets, generateEmptySet()];
+      state.currentSet++;
+    } else {
+      state.isWon = true;
+      state.isPaused = true;
+      if (isFirstPlayer) {
+        state.players[0].isWinner = true;
+      } else {
+        state.players[1].isWinner = true;
+      }
+    }
+  } else {
+    state.currentSet++;
+  }
+}
+
 function handleTiebreak(
   state: scoreboardState,
   isFirstPlayer: boolean,
@@ -158,11 +220,11 @@ function handleTiebreak(
       state.currentGame.firstPlayerPoints;
     state.sets[state.currentSet].secondPlayerTiebreakPoints =
       state.currentGame.secondPlayerPoints;
-    // Moving to next set.
-    state.currentSet++;
     // Reseting game.
     state.isTiebreak = false;
     scoreboardSlice.caseReducers.resetCurrentGame(state);
+    // Define winner.
+    defineWinner(state, isFirstPlayer);
   }
 }
 
@@ -177,33 +239,7 @@ function handleGameWin(state: scoreboardState, isFirstPlayer: boolean) {
   // Check if win set.
   if (isLastSetGame(winnerGames, loserGames)) {
     // Define this set's winner.
-    state.sets[state.currentSet].winner = isFirstPlayer
-      ? PlayerTypes.FIRST_PLAYER
-      : PlayerTypes.SECOND_PLAYER;
-
-    const [firstPlayerScore, secondPlayerScore] = getScore(state);
-    const setsToWin =
-      state.bestOfNumber === 1 ? 1 : Math.floor(state.bestOfNumber / 2) + 1;
-
-    // Check if it is the last visible set,
-    if (isLastSet(state)) {
-      // If none of players won enough sets.
-      if (firstPlayerScore < setsToWin && secondPlayerScore < setsToWin) {
-        // Add a new visible set.
-        state.sets = [...state.sets, generateEmptySet()];
-        state.currentSet++;
-      } else {
-        state.isWon = true;
-        state.isPaused = true;
-        if (isFirstPlayer) {
-          state.players[0].isWinner = true;
-        } else {
-          state.players[1].isWinner = true;
-        }
-      }
-    } else {
-      state.currentSet++;
-    }
+    defineWinner(state, isFirstPlayer);
   }
   // Check if tiebreak
   else if (winnerGames === 5 && loserGames === 6) {
