@@ -52,8 +52,10 @@ const Welcome = () => {
     dispatch(setSetsNumber(setsNumber));
   }
   return (
-    <div className="flex items-center flex-col justify-center text-white sm:py-12 py-8 sm:px-8 px-4 sm:m-8 m-2 w-[40vw] sm:min-w-[400px] min-w-[310px] bg-teal-800 rounded-2xl shadow-2xl">
-      <h1 className="text-5xl font-bold mb-8 text-center">Tennis Scoreboard</h1>
+    <div className="flex items-center flex-col justify-center text-white sm:py-12 py-8 sm:px-8 px-4 sm:m-8 m-2 lg:w-[40vw] md:w-[50vw] sm:w-[60vw] w-[80vw]  sm:min-w-[400px] min-w-[310px] bg-teal-800 rounded-2xl shadow-2xl">
+      <h1 className="md:text-5xl text-4xl  font-bold mb-8 text-center">
+        Tennis Scoreboard
+      </h1>
       <form className="scoreboard-form" onSubmit={(e) => handleSubmit(e)}>
         <div>
           <div className="flex items-center justify-between">
@@ -93,7 +95,7 @@ const Welcome = () => {
         </div>
         <button
           type="submit"
-          className="py-4 px-8 w-full bg-teal-700 transition-colors hover:bg-teal-600 shadow-lg text-2xl rounded-xl mt-12 font-bold"
+          className="py-4 px-8 w-full bg-teal-700 transition-colors hover:bg-teal-600 shadow-lg md:text-4xl text-3xl rounded-xl mt-12 font-bold"
         >
           Start
         </button>

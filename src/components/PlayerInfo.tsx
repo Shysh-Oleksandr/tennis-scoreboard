@@ -15,7 +15,7 @@ const PlayerInfo = ({
     <div className="px-4 w-full">
       <label
         htmlFor={`player${nameOneId}-name`}
-        className="mb-2 text-2xl flex items-center"
+        className="mb-2 sm:text-2xl text-xl flex items-center"
       >
         First player:
       </label>
@@ -29,7 +29,7 @@ const PlayerInfo = ({
       <div className="players__time-container">
         <label
           htmlFor={`player${nameTwoId}-name`}
-          className="mb-2 text-2xl flex items-center"
+          className="mb-2 sm:text-2xl text-xl flex items-center"
         >
           Second player:
         </label>
