@@ -16,7 +16,7 @@ function App() {
       <ThemeProvider theme={theme.theme}>
         <GlobalStyles />
 
-        <div className="app text-center pt-[20vh] rela bg-[#c5603d] w-full h-full">
+        <div className="app text-center md:pt-[20vh] pt-[35vh] bg-[#c5603d] w-full h-full">
           <Scoreboard />
           <Navigation />
           <Stopwatch />

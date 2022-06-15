@@ -19,7 +19,7 @@ const PointType = () => {
     return pointTypeString;
   }
   return getPointType() !== PointTypes.DEFAULT_POINT ? (
-    <span className="point-type absolute -top-16 left-0 text-2xl px-10 py-4 bg-slate-800 text-white rounded-t-md">
+    <span className="point-type absolute sm:-top-16 -top-12 left-0 sm:text-2xl text-xl sm:px-10 px-6 sm:py-4 py-3 bg-slate-800 text-white rounded-t-md">
       {getPointType()}
     </span>
   ) : null;

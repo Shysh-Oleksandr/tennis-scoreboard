@@ -29,10 +29,10 @@ const Player = ({ name, isWinner, playerType }: PlayerProps) => {
       className="bg-teal-800 scoreboard relative  text-white  flex items-center justify-between cursor-pointer"
       onClick={() => dispatch(addPoint(playerType))}
     >
-      <div className="font-bold text-5xl text-left p-6 relative ml-10 shrink-0 grow basis-1/4">
+      <div className="font-bold md:text-5xl sm:text-4xl text-2xl text-left md:p-6 sm:p-4 p-3 relative md:ml-10 sm:ml-6 ml-4 shrink-0 grow basis-1/4">
         <h3>{name}</h3>
         {currentServer === playerType && !isWon && (
-          <span className="absolute -left-12 top-1/2 -translate-y-1/2 text-center p-6 tracking-tighter">
+          <span className="absolute md:-left-12 sm:-left-7 -left-5 top-1/2 -translate-y-1/2 text-center md:p-6 sm:p-4 p-3 tracking-tighter">
             //
           </span>
         )}
@@ -49,7 +49,7 @@ const Player = ({ name, isWinner, playerType }: PlayerProps) => {
             return (
               <div
                 key={set.id}
-                className={`text-5xl bg-transparent px-8 py-6 ${
+                className={`md:text-5xl sm:text-4xl text-3xl bg-transparent md:px-8 sm:px-7 px-5 md:py-6 py-4 ${
                   currentSet === index && !isWon ? "current-set" : ""
                 } ${
                   set.winner &&
@@ -75,7 +75,7 @@ const Player = ({ name, isWinner, playerType }: PlayerProps) => {
             );
           })}
         </div>
-        <div className="text-5xl current-game text-teal-800 w-24  px-6 py-6 ">
+        <div className="md:text-5xl sm:text-4xl text-3xl current-game text-teal-800 md:w-24 sm:w-20 w-16  md:py-6 py-4 ">
           {isTiebreak
             ? playerGamePoints
             : convertToGamePoints(playerGamePoints)}

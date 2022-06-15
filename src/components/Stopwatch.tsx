@@ -33,8 +33,8 @@ const Stopwatch = () => {
   }, [isPaused]);
 
   return (
-    <div className="mt-12">
-      <div className="text-4xl font-bold drop-shadow-xl text-white">
+    <div className="md:mt-12 sm:mt-10 mt-8">
+      <div className="sm:text-4xl text-3xl font-bold drop-shadow-xl text-white">
         <span>{convertMsToHM(time)[2]}:</span>
         <span>{formatTime(convertMsToHM(time)[1])}′</span>
         <span>{formatTime(convertMsToHM(time)[0])}″</span>
@@ -48,7 +48,7 @@ const Stopwatch = () => {
             }}
           >
             <span
-              className={`text-5xl p-3 ${
+              className={`sm:text-5xl text-4xl p-3 ${
                 running
                   ? "bg-[#46a676] hover:bg-[#3d9167]"
                   : "bg-[#0a493a] hover:bg-[#0e5747]"
