@@ -26,14 +26,14 @@ const Player = ({ name, isWinner, playerType }: PlayerProps) => {
 
   return (
     <div
-      className="bg-teal-800 scoreboard relative  text-white  flex items-center justify-between cursor-pointer"
+      className="bg-teal-800 scoreboard relative disable-select text-white  flex items-center justify-between cursor-pointer"
       onClick={() => dispatch(addPoint(playerType))}
     >
       <div className="font-bold md:text-5xl sm:text-4xl text-2xl text-left md:p-6 sm:p-4 p-3 relative md:ml-10 sm:ml-6 ml-4 shrink-0 grow basis-1/4">
         <h3>{name}</h3>
         {currentServer === playerType && !isWon && (
           <span className="absolute md:-left-12 sm:-left-7 -left-5 top-1/2 -translate-y-1/2 text-center md:p-6 sm:p-4 p-3 tracking-tighter">
-            //
+            {"//"}
           </span>
         )}
         {isWinner && isWon && (
@@ -42,14 +42,13 @@ const Player = ({ name, isWinner, playerType }: PlayerProps) => {
           </span>
         )}
       </div>
-
       <div className="flex items-center">
         <div className="flex items-center overflow-x-auto  relative">
           {sets.map((set, index) => {
             return (
               <div
                 key={set.id}
-                className={`md:text-5xl sm:text-4xl text-3xl bg-transparent md:px-8 sm:px-7 px-5 md:py-6 py-4 ${
+                className={`md:text-5xl sm:text-4xl text-3xl max-w bg-transparent md:px-8 sm:px-7 px-5 md:py-6 py-4 ${
                   currentSet === index && !isWon ? "current-set" : ""
                 } ${
                   set.winner &&

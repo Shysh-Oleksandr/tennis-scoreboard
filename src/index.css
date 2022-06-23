@@ -156,3 +156,15 @@ h6 {
 .navigation-btn svg {
   @apply mx-auto;
 }
+
+.disable-select {
+  user-select: none; /* supported by Chrome and Opera */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.max-w {
+  @apply md:max-w-[7rem] sm:max-w-[6rem] max-w-[4.5rem];
+}
