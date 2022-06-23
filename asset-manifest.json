@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/tennis-scoreboard/static/css/main.a8743f66.css",
+    "main.js": "/tennis-scoreboard/static/js/main.a2ab1ed8.js",
+    "index.html": "/tennis-scoreboard/index.html",
+    "main.a8743f66.css.map": "/tennis-scoreboard/static/css/main.a8743f66.css.map",
+    "main.a2ab1ed8.js.map": "/tennis-scoreboard/static/js/main.a2ab1ed8.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.a8743f66.css",
+    "static/js/main.a2ab1ed8.js"
+  ]
+}
